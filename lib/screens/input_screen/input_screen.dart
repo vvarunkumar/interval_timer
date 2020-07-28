@@ -4,6 +4,8 @@ import 'package:interval_timer/screens/input_screen/row_data.dart';
 import 'package:interval_timer/constants.dart';
 import 'package:interval_timer/screens/timer_screen.dart';
 
+enum currentRow { setRest, intervalRest, startCountdown, exerciseTime }
+
 class InputScreen extends StatefulWidget {
   @override
   _InputScreenState createState() => _InputScreenState();
@@ -13,9 +15,50 @@ class _InputScreenState extends State<InputScreen> {
   final _name = TextEditingController();
   final _noOfSets = TextEditingController();
 
-  Duration _exTime1;
-  Duration _exTime2;
-  Duration _exTime3;
+  TimerData _timerData;
+  ExerciseData _exerciseData = ExerciseData();
+
+  bool _validateName = false;
+  bool _validateSets = false;
+
+  Duration _intervalRestDuration = Duration(seconds: 0);
+  Duration _setRestDuration = Duration(seconds: 0);
+  Duration _startCountdownDuration = Duration(seconds: 3);
+
+  void durationPickerDialogue(
+      {BuildContext context,
+      currentRow rowName,
+      int index,
+      Duration initialDuration}) {
+    showDialog<Duration>(
+      context: context,
+      builder: (BuildContext context) {
+        return DurationPickerDialog(
+          initialDuration: initialDuration,
+          title: Text('Rest Duration'),
+        );
+      },
+    ).then((delay) {
+      if (delay == null) return;
+      setState(() {
+        if (rowName == currentRow.intervalRest)
+          _intervalRestDuration = delay;
+        else if (rowName == currentRow.setRest)
+          _setRestDuration = delay;
+        else if (rowName == currentRow.startCountdown)
+          _startCountdownDuration = delay;
+        else
+          _exerciseData.exerciseDataList[index].duration = delay;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _timerData = defaultTimerData;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +88,10 @@ class _InputScreenState extends State<InputScreen> {
                         ),
                         TextField(
                           controller: _name,
+                          decoration: InputDecoration(
+                            errorText:
+                                _validateName ? 'Name can\'t be empty' : null,
+                          ),
                         ),
                         SizedBox(
                           height: 10.0,
@@ -59,27 +106,51 @@ class _InputScreenState extends State<InputScreen> {
                         TextField(
                           controller: _noOfSets,
                           keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            errorText: _validateSets
+                                ? 'No of Sets can\'t be empty'
+                                : null,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   CustomCard(
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        ExerciseRowData(
-                          name: 'Exercise 1',
-                          duration: Duration(seconds: 0),
-                          onPress: () {},
+                        Text(
+                          'Exercises',
+                          style: TextStyle(
+                            color: Color(0xFFA6A6A6),
+                            fontSize: deviceHeight * 0.02,
+                          ),
                         ),
-                        ExerciseRowData(
-                          name: 'Exercise 2',
-                          duration: Duration(seconds: 0),
-                          onPress: () {},
-                        ),
-                        ExerciseRowData(
-                          name: 'Exercise 3',
-                          duration: Duration(seconds: 0),
-                          onPress: () {},
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+                            return ExerciseRowData(
+                              name: _exerciseData.exerciseDataList[index].name,
+                              duration: _exerciseData
+                                  .exerciseDataList[index].duration,
+                              onPress: () {
+                                setState(() {
+                                  durationPickerDialogue(
+                                      context: context,
+                                      index: index,
+                                      initialDuration: _exerciseData
+                                          .exerciseDataList[index].duration);
+                                });
+                              },
+                              onDelete: () {
+                                setState(() {
+                                  _exerciseData.deleteExerciseData(
+                                      _exerciseData.exerciseDataList[index]);
+                                });
+                              },
+                            );
+                          },
+                          itemCount: _exerciseData.exerciseDataList.length,
                         ),
                         Center(
                           child: IconButton(
@@ -87,7 +158,14 @@ class _InputScreenState extends State<InputScreen> {
                               Icons.add_circle,
                               color: Color(0xFFB3B3B3),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              setState(() {
+                                _exerciseData.addExerciseData(ExerciseDetails(
+                                  name: 'Exercise ${_exerciseData.listSize}',
+                                  duration: Duration(seconds: 0),
+                                ));
+                              });
+                            },
                           ),
                         )
                       ],
@@ -97,10 +175,36 @@ class _InputScreenState extends State<InputScreen> {
                     child: Column(
                       children: <Widget>[
                         RowData(
+                          text: 'Starting Countdown',
+                          duration: _startCountdownDuration,
+                          onPress: () {
+                            durationPickerDialogue(
+                              context: context,
+                              rowName: currentRow.startCountdown,
+                              initialDuration: _startCountdownDuration,
+                            );
+                          },
+                        ),
+                        RowData(
                           text: 'Rest Between Intervals',
+                          duration: _intervalRestDuration,
+                          onPress: () {
+                            durationPickerDialogue(
+                              context: context,
+                              rowName: currentRow.intervalRest,
+                              initialDuration: _intervalRestDuration,
+                            );
+                          },
                         ),
                         RowData(
                           text: 'Rest Between Sets',
+                          duration: _setRestDuration,
+                          onPress: () {
+                            durationPickerDialogue(
+                                context: context,
+                                rowName: currentRow.setRest,
+                                initialDuration: _setRestDuration);
+                          },
                         ),
                       ],
                     ),
@@ -109,19 +213,25 @@ class _InputScreenState extends State<InputScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text('Audio'),
-                            Text('No Audio Selected'),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text('Audio'),
+                              Text('No Audio Selected'),
+                            ],
+                          ),
                         ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: <Widget>[
-                            Text('Alerts'),
-                            Text('Text to Speech'),
-                          ],
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text('Alerts'),
+                              Text('Text to Speech'),
+                            ],
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -149,8 +259,39 @@ class _InputScreenState extends State<InputScreen> {
               width: double.infinity,
               child: GestureDetector(
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => TimerScreen()));
+                  print("Button Pressed");
+                  setState(() {
+                    _name.text.isEmpty
+                        ? _validateName = true
+                        : _validateName = false;
+                    _noOfSets.text.isEmpty
+                        ? _validateSets = true
+                        : _validateSets = false;
+                  });
+
+                  if (_validateName == true || _validateSets == true) return;
+
+                  _timerData.sets = int.parse(_noOfSets.text);
+                  _timerData.exerciseCount = _exerciseData.listSize;
+                  _timerData.startDelay = _startCountdownDuration;
+                  _timerData.restSets = _setRestDuration;
+                  _timerData.restIntervals = _intervalRestDuration;
+
+                  List<Duration> _exerciseList = [];
+
+                  for (var value in _exerciseData.exerciseDataList) {
+                    _exerciseList.add(value.duration);
+                    print(value.duration);
+                  }
+
+                  _timerData.exerciseList = _exerciseList;
+
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TimerScreen(
+                                timerData: _timerData,
+                              )));
                 },
                 child: Container(
                   child: Center(
