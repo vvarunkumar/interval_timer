@@ -1,18 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:interval_timer/components/text_container_box.dart';
-import 'package:interval_timer/constants.dart';
+import 'package:workout_timer/components/text_container_box.dart';
+import 'file:///D:/Code/AndroidStudioProjects/Github/workout_timer/lib/model.dart';
+import 'package:workout_timer/constants.dart';
 import 'package:screen/screen.dart';
 
 class TimerScreen extends StatefulWidget {
+  final TimerData timerData;
+
+  const TimerScreen({Key key, this.timerData}) : super(key: key);
   @override
   _TimerScreenState createState() => _TimerScreenState();
 }
 
 class _TimerScreenState extends State<TimerScreen> {
+  Workout _workout;
+  bool isFinished = false;
+
+  String stepName(WorkoutState step) {
+    switch (step) {
+//    case WorkoutState.exercising:
+//      return 'Exercise';
+//    case WorkoutState.intervalRest:
+//      return 'Interval Rest';
+//    case WorkoutState.setRest:
+//      return 'Set Rest';
+//    case WorkoutState.finished:
+//      return 'Finished';
+      case WorkoutState.starting:
+        return 'Starting';
+      default:
+        return _workout.exerciseName;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _workout = Workout(widget.timerData, _onWorkoutChanged); // _onWorkoutChanged()
+    _start();
+    _pause();
+  }
+
+  _onWorkoutChanged() {
+    if (_workout.step == WorkoutState.finished) {
+      isFinished = true;
+      Screen.keepOn(false);
+    }
+    this.setState(() {
+      print('_onWorkoutChanged() called.');
+    });
+  }
+
+  _start() {
+    _workout.start();
+    Screen.keepOn(true);
+  }
+
+  _pause() {
+    _workout.pause();
+    Screen.keepOn(false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final deviceHeight =
-        MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
+    final deviceHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
     final deviceWidth = MediaQuery.of(context).size.width;
 
     final kHorizontalDivider = Divider(
@@ -35,20 +86,23 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
               kHorizontalDivider,
               TextContainerBox(
-                text: '12:20',
+                text: formatTime(
+                    _workout.timeLeft == null ? Duration(seconds: 0) : _workout.timeLeft),
                 height: deviceHeight * 0.2,
                 width: deviceWidth * 0.8,
               ),
               kHorizontalDivider,
+              SizedBox(
+                height: deviceHeight * 0.03,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
                   Column(
                     children: <Widget>[
                       TextContainerBox(
-                        text: '2/5',
+                        text: '${_workout.currentExercise}/${_workout.totalNoOfExercise}',
                         height: deviceHeight * 0.05,
-                        margin: EdgeInsets.only(top: deviceHeight * 0.03),
                       ),
                       TextContainerBox(
                         text: 'Exercise No',
@@ -60,9 +114,8 @@ class _TimerScreenState extends State<TimerScreen> {
                   Column(
                     children: <Widget>[
                       TextContainerBox(
-                        text: '1/3',
+                        text: '${_workout.set}/${_workout.totalSet}',
                         height: deviceHeight * 0.05,
-                        margin: EdgeInsets.only(top: deviceHeight * 0.03),
                       ),
                       TextContainerBox(
                         text: 'Sets',
@@ -73,51 +126,56 @@ class _TimerScreenState extends State<TimerScreen> {
                   ),
                 ],
               ),
+              SizedBox(
+                height: deviceHeight * 0.05,
+              ),
               Container(
-                height: deviceHeight * 0.25,
+                height: deviceHeight * 0.3,
                 width: deviceWidth * 0.8,
-                margin: EdgeInsets.all(deviceHeight * 0.05),
+//                margin: EdgeInsets.only(top: deviceHeight * 0.05),
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Colors.indigoAccent,
                   borderRadius: BorderRadius.circular(10.0),
                 ),
                 child: TextContainerBox(
-                  text: 'WORK',
+                  text: stepName(_workout.step),
                   height: deviceHeight * .10,
                 ),
               ),
               Expanded(
                 child: Container(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: deviceHeight * 0.05,
-                        backgroundColor: Colors.black54,
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.pause,
-                            color: Colors.white,
+                  child: Center(
+                    child: isFinished
+                        ? CircleAvatar(
+                            radius: deviceHeight * 0.05,
+                            backgroundColor: Colors.teal,
+                            child: IconButton(
+                              alignment: Alignment.center,
+                              icon: Icon(
+                                Icons.replay,
+                                color: Colors.white,
+                              ),
+                              iconSize: deviceHeight * 0.08,
+                              onPressed: () {
+                                _workout = Workout(widget.timerData, _onWorkoutChanged);
+                                isFinished = false;
+                                _start();
+                              },
+                            ),
+                          )
+                        : CircleAvatar(
+                            radius: deviceHeight * 0.05,
+                            backgroundColor: _workout.isActive ? Colors.black54 : Colors.blueAccent,
+                            child: IconButton(
+                              icon: Icon(
+                                _workout.isActive ? Icons.pause : Icons.play_arrow,
+                                color: Colors.white,
+                              ),
+                              iconSize: deviceHeight * 0.08,
+                              onPressed: _workout.isActive ? _pause : _start,
+                            ),
                           ),
-                          iconSize: deviceHeight * 0.08,
-                          onPressed: () {},
-                        ),
-                      ),
-                      CircleAvatar(
-                        radius: deviceHeight * 0.05,
-                        backgroundColor: Colors.redAccent,
-                        child: IconButton(
-                          alignment: Alignment.center,
-                          icon: Icon(
-                            Icons.stop,
-                            color: Colors.white,
-                          ),
-                          iconSize: deviceHeight * 0.08,
-                          onPressed: () {},
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),

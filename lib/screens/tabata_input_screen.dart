@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:interval_timer/components/reusable_card.dart';
-import 'package:interval_timer/screens/input_screen/row_data.dart';
-import 'package:interval_timer/constants.dart';
-import 'package:interval_timer/screens/timer_screen.dart';
+import 'package:workout_timer/components/reusable_card.dart';
+import 'package:workout_timer/components/row_text_duration.dart';
+import 'file:///D:/Code/AndroidStudioProjects/Github/workout_timer/lib/model.dart';
+import 'package:workout_timer/screens/timer_screen.dart';
+import 'package:workout_timer/components/exercise_data.dart';
+import 'package:workout_timer/components/duration_picker.dart';
 
 enum currentRow { setRest, intervalRest, startCountdown, exerciseTime }
 
-class InputScreen extends StatefulWidget {
+class TabataInputScreen extends StatefulWidget {
   @override
-  _InputScreenState createState() => _InputScreenState();
+  _TabataInputScreenState createState() => _TabataInputScreenState();
 }
 
-class _InputScreenState extends State<InputScreen> {
+class _TabataInputScreenState extends State<TabataInputScreen> {
   final _name = TextEditingController();
   final _noOfSets = TextEditingController();
 
-  TimerData _timerData;
+  TimerData _tabataData;
   ExerciseData _exerciseData = ExerciseData();
 
   bool _validateName = false;
@@ -26,10 +28,7 @@ class _InputScreenState extends State<InputScreen> {
   Duration _startCountdownDuration = Duration(seconds: 3);
 
   void durationPickerDialogue(
-      {BuildContext context,
-      currentRow rowName,
-      int index,
-      Duration initialDuration}) {
+      {BuildContext context, currentRow rowName, int index, Duration initialDuration}) {
     showDialog<Duration>(
       context: context,
       builder: (BuildContext context) {
@@ -48,22 +47,20 @@ class _InputScreenState extends State<InputScreen> {
         else if (rowName == currentRow.startCountdown)
           _startCountdownDuration = delay;
         else
-          _exerciseData.exerciseDataList[index].duration = delay;
+          _exerciseData.exerciseDetailList[index].duration = delay;
       });
     });
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    _timerData = defaultTimerData;
+    _tabataData = defaultTabataData;
   }
 
   @override
   Widget build(BuildContext context) {
-    final deviceHeight =
-        MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
+    final deviceHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
     final deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -89,8 +86,7 @@ class _InputScreenState extends State<InputScreen> {
                         TextField(
                           controller: _name,
                           decoration: InputDecoration(
-                            errorText:
-                                _validateName ? 'Name can\'t be empty' : null,
+                            errorText: _validateName ? 'Name can\'t be empty' : null,
                           ),
                         ),
                         SizedBox(
@@ -107,9 +103,7 @@ class _InputScreenState extends State<InputScreen> {
                           controller: _noOfSets,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            errorText: _validateSets
-                                ? 'No of Sets can\'t be empty'
-                                : null,
+                            errorText: _validateSets ? 'No of Sets can\'t be empty' : null,
                           ),
                         ),
                       ],
@@ -130,27 +124,26 @@ class _InputScreenState extends State<InputScreen> {
                           shrinkWrap: true,
                           itemBuilder: (context, index) {
                             return ExerciseRowData(
-                              name: _exerciseData.exerciseDataList[index].name,
-                              duration: _exerciseData
-                                  .exerciseDataList[index].duration,
+                              name: _exerciseData.exerciseDetailList[index].name,
+                              duration: _exerciseData.exerciseDetailList[index].duration,
                               onPress: () {
                                 setState(() {
                                   durationPickerDialogue(
                                       context: context,
                                       index: index,
-                                      initialDuration: _exerciseData
-                                          .exerciseDataList[index].duration);
+                                      initialDuration:
+                                          _exerciseData.exerciseDetailList[index].duration);
                                 });
                               },
                               onDelete: () {
                                 setState(() {
-                                  _exerciseData.deleteExerciseData(
-                                      _exerciseData.exerciseDataList[index]);
+                                  _exerciseData
+                                      .deleteExerciseData(_exerciseData.exerciseDetailList[index]);
                                 });
                               },
                             );
                           },
-                          itemCount: _exerciseData.exerciseDataList.length,
+                          itemCount: _exerciseData.exerciseDetailList.length,
                         ),
                         Center(
                           child: IconButton(
@@ -174,7 +167,7 @@ class _InputScreenState extends State<InputScreen> {
                   CustomCard(
                     child: Column(
                       children: <Widget>[
-                        RowData(
+                        RowTextDuration(
                           text: 'Starting Countdown',
                           duration: _startCountdownDuration,
                           onPress: () {
@@ -185,7 +178,7 @@ class _InputScreenState extends State<InputScreen> {
                             );
                           },
                         ),
-                        RowData(
+                        RowTextDuration(
                           text: 'Rest Between Intervals',
                           duration: _intervalRestDuration,
                           onPress: () {
@@ -196,7 +189,7 @@ class _InputScreenState extends State<InputScreen> {
                             );
                           },
                         ),
-                        RowData(
+                        RowTextDuration(
                           text: 'Rest Between Sets',
                           duration: _setRestDuration,
                           onPress: () {
@@ -261,36 +254,24 @@ class _InputScreenState extends State<InputScreen> {
                 onTap: () {
                   print("Button Pressed");
                   setState(() {
-                    _name.text.isEmpty
-                        ? _validateName = true
-                        : _validateName = false;
-                    _noOfSets.text.isEmpty
-                        ? _validateSets = true
-                        : _validateSets = false;
+                    _name.text.isEmpty ? _validateName = true : _validateName = false;
+                    _noOfSets.text.isEmpty ? _validateSets = true : _validateSets = false;
                   });
 
                   if (_validateName == true || _validateSets == true) return;
 
-                  _timerData.sets = int.parse(_noOfSets.text);
-                  _timerData.exerciseCount = _exerciseData.listSize;
-                  _timerData.startDelay = _startCountdownDuration;
-                  _timerData.restSets = _setRestDuration;
-                  _timerData.restIntervals = _intervalRestDuration;
-
-                  List<Duration> _exerciseList = [];
-
-                  for (var value in _exerciseData.exerciseDataList) {
-                    _exerciseList.add(value.duration);
-                    print(value.duration);
-                  }
-
-                  _timerData.exerciseList = _exerciseList;
+                  _tabataData.sets = int.parse(_noOfSets.text);
+                  _tabataData.exerciseCount = _exerciseData.listSize;
+                  _tabataData.startDelay = _startCountdownDuration;
+                  _tabataData.restSets = _setRestDuration;
+                  _tabataData.restIntervals = _intervalRestDuration;
+                  _tabataData.exerciseDetailList = _exerciseData.exerciseDetailList;
 
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => TimerScreen(
-                                timerData: _timerData,
+                                timerData: _tabataData,
                               )));
                 },
                 child: Container(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'exercise_card.dart';
-import 'package:interval_timer/screens/input_screen/input_screen.dart';
+import 'timer_type_card.dart';
+import 'file:///D:/Code/AndroidStudioProjects/Github/workout_timer/lib/screens/tabata_input_screen.dart';
+import 'file:///D:/Code/AndroidStudioProjects/Github/workout_timer/lib/model.dart';
+import 'package:workout_timer/screens/timer_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -13,7 +15,7 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color(0xFF12C99B),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => InputScreen()));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => TabataInputScreen()));
         },
         child: Icon(
           Icons.add,
@@ -28,17 +30,26 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                ExerciseCard(
+                TimerTypeCard(
                   timerName: 'HIIT Timer',
                 ),
-                ExerciseCard(
+                TimerTypeCard(
                   timerName: 'Tabata Timer',
                 ),
-                ExerciseCard(
+                TimerTypeCard(
                   timerName: 'Compound Timer',
                 ),
-                ExerciseCard(
+                TimerTypeCard(
                   timerName: 'Custom Timer',
+                  onPressed: () {
+                    TimerData _timerData = defaultTabataData;
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TimerScreen(
+                                  timerData: _timerData,
+                                )));
+                  },
                 ),
               ],
             ),
