@@ -8,6 +8,7 @@ import 'package:workout_timer/components/exercise_data.dart';
 import 'package:workout_timer/model.dart';
 import 'package:workout_timer/components/row_text_duration.dart';
 import 'package:workout_timer/components/duration_picker.dart';
+import 'package:workout_timer/screens/timer_screen.dart';
 
 class HIITInputScreen extends StatefulWidget {
   @override
@@ -52,22 +53,24 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
     // TODO: implement initState
     super.initState();
     _hiitData = defaultTimerData;
+    _hiitData.timerType = TimerType.hiit;
     _hiitData.exerciseDetailList.add(ExerciseDetails(
       name: 'High Intensity',
       duration: Duration(seconds: 0),
       color: Colors.deepOrangeAccent,
+      splitInterval: false,
     ));
     _hiitData.exerciseDetailList.add(ExerciseDetails(
       name: 'Low Intensity',
       duration: Duration(seconds: 0),
       color: Colors.indigoAccent,
+      splitInterval: false,
     ));
   }
 
   @override
   Widget build(BuildContext context) {
     final deviceHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
-    final deviceWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -90,10 +93,16 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                     CustomCard(
                       child: Column(
                         children: <Widget>[
-                          RowTextDuration(
+                          ExerciseRowWidget(
                             text: _hiitData.exerciseDetailList[0].name,
                             duration: _hiitData.exerciseDetailList[0].duration,
-                            onTap: () {
+                            splitInterval: _hiitData.exerciseDetailList[0].splitInterval,
+                            onSplitIntervalSwitch: (value) {
+                              setState(() {
+                                _hiitData.exerciseDetailList[0].splitInterval = value;
+                              });
+                            },
+                            onDurationTap: () {
                               durationPickerDialogue(
                                 context: context,
                                 title: _hiitData.exerciseDetailList[0].name,
@@ -115,10 +124,16 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                             },
                             selectedColor: _hiitData.exerciseDetailList[0].color,
                           ),
-                          RowTextDuration(
+                          ExerciseRowWidget(
                             text: _hiitData.exerciseDetailList[1].name,
                             duration: _hiitData.exerciseDetailList[1].duration,
-                            onTap: () {
+                            splitInterval: _hiitData.exerciseDetailList[1].splitInterval,
+                            onSplitIntervalSwitch: (value) {
+                              setState(() {
+                                _hiitData.exerciseDetailList[1].splitInterval = value;
+                              });
+                            },
+                            onDurationTap: () {
                               durationPickerDialogue(
                                 context: context,
                                 title: _hiitData.exerciseDetailList[1].name,
@@ -149,7 +164,9 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                         duration: _hiitData.startDelay,
                         onTap: () {
                           durationPickerDialogue(
-                              title: 'Starting Countdown', initialDuration: _hiitData.startDelay);
+                              context: context,
+                              title: 'Starting Countdown',
+                              initialDuration: _hiitData.startDelay);
                         },
                         selectedColor: _hiitData.colorCountDown,
                         onColorTap: () {
@@ -182,7 +199,20 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                 height: deviceHeight * 0.08,
                 width: double.infinity,
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    setState(() {
+                      _name.text.isEmpty ? _validateName = true : _validateName = false;
+                    });
+                    if (_validateName == true) return;
+                    _hiitData.timerName = _name.text;
+
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TimerScreen(
+                                  timerData: _hiitData,
+                                )));
+                  },
                   child: Container(
                     child: Center(
                       child: Text(
