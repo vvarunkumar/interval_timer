@@ -1,16 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:workout_timer/components/color_picker_dialog.dart';
 import 'package:workout_timer/constants.dart';
+import 'package:workout_timer/custom_widgets/bottom_button.dart';
 import 'package:workout_timer/custom_widgets/extras_card.dart';
 import 'package:workout_timer/custom_widgets/name_set_card.dart';
 import 'package:workout_timer/components/reusable_card.dart';
 import 'package:workout_timer/components/exercise_data.dart';
-import 'package:workout_timer/model.dart';
 import 'package:workout_timer/components/row_text_duration.dart';
 import 'package:workout_timer/components/duration_picker.dart';
 import 'package:workout_timer/screens/timer_screen.dart';
+import 'package:workout_timer/screens/home_screen/timer_data_card.dart';
+import 'package:workout_timer/model/timer_data.dart';
+import 'package:workout_timer/services/timer_shared_prefs.dart';
+import 'package:workout_timer/services/analytics_service.dart';
 
 class HIITInputScreen extends StatefulWidget {
+  final TimerCards timerCards;
+  final TimerData timerData;
+  final int index;
+
+  const HIITInputScreen({Key key, this.timerCards, this.timerData, this.index}) : super(key: key);
+
   @override
   _HIITInputScreenState createState() => _HIITInputScreenState();
 }
@@ -24,6 +34,7 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
     BuildContext context,
     Duration initialDuration,
     String title,
+    int step,
   }) {
     showDialog<Duration>(
       context: context,
@@ -31,6 +42,7 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
         return DurationPickerDialog(
           initialDuration: initialDuration,
           title: Text('$title'),
+          step: step ?? 1,
         );
       },
     ).then((delay) {
@@ -48,24 +60,33 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
     kRemoveFocus(context);
   }
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
+  void initializeDefault() {
     _hiitData = defaultTimerData;
     _hiitData.timerType = TimerType.hiit;
+    _hiitData.exerciseCount = 2;
     _hiitData.exerciseDetailList.add(ExerciseDetails(
       name: 'High Intensity',
-      duration: Duration(seconds: 0),
+      duration: Duration(seconds: 30),
       color: Colors.deepOrangeAccent,
       splitInterval: false,
     ));
     _hiitData.exerciseDetailList.add(ExerciseDetails(
       name: 'Low Intensity',
-      duration: Duration(seconds: 0),
+      duration: Duration(seconds: 30),
       color: Colors.indigoAccent,
       splitInterval: false,
     ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.timerData == null)
+      initializeDefault();
+    else {
+      _hiitData = widget.timerData;
+      _name.text = widget.timerData.timerName;
+    }
   }
 
   @override
@@ -81,8 +102,7 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
           },
           child: Column(
             children: <Widget>[
-              Container(
-                height: deviceHeight * 0.92,
+              Expanded(
                 child: ListView(
                   children: <Widget>[
                     buildNameSetCard(
@@ -107,6 +127,7 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                                 context: context,
                                 title: _hiitData.exerciseDetailList[0].name,
                                 initialDuration: _hiitData.exerciseDetailList[0].duration,
+                                step: 10,
                               );
                             },
                             onColorTap: () {
@@ -138,6 +159,7 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                                 context: context,
                                 title: _hiitData.exerciseDetailList[1].name,
                                 initialDuration: _hiitData.exerciseDetailList[1].duration,
+                                step: 10,
                               );
                             },
                             onColorTap: () {
@@ -195,35 +217,31 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                   ],
                 ),
               ),
-              Container(
-                height: deviceHeight * 0.08,
-                width: double.infinity,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _name.text.isEmpty ? _validateName = true : _validateName = false;
-                    });
-                    if (_validateName == true) return;
-                    _hiitData.timerName = _name.text;
+              BottomButton(
+                buttonName: 'SAVE',
+                onTap: () async {
+                  setState(() {
+                    _name.text.isEmpty ? _validateName = true : _validateName = false;
+                  });
+                  if (_validateName == true) return;
+                  _hiitData.timerName = _name.text;
 
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TimerScreen(
-                                  timerData: _hiitData,
-                                )));
-                  },
-                  child: Container(
-                    child: Center(
-                      child: Text(
-                        'START',
-                        style: TextStyle(fontSize: deviceHeight * 0.03),
-                      ),
-                    ),
-                    color: Color(0xFF12C99B),
-                    margin: EdgeInsets.only(top: 10.0),
-                  ),
-                ),
+                  if (widget.timerData == null) {
+                    widget.timerCards.timerCardList
+                        .add(TimerCardData(timerCardName: _name.text, timerData: _hiitData));
+                    await AnalyticsService()
+                        .logTimerData(name: 'New_HIIT_Timer_Created', timerData: _hiitData);
+                  } else {
+                    widget.timerCards.timerCardList[widget.index] =
+                        TimerCardData(timerCardName: _name.text, timerData: _hiitData);
+
+                    await AnalyticsService()
+                        .logTimerData(name: 'Old_HIIT_Timer_Edited', timerData: _hiitData);
+                  }
+                  saveHomeData(timerCards: widget.timerCards);
+
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
