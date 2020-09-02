@@ -27,6 +27,7 @@ class _buildNameSetCardState extends State<buildNameSetCard> {
         children: <Widget>[
           TextField(
             controller: widget.name,
+            textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Enter Timer Name',
               errorText: widget.validateName ? 'Name can\'t be empty' : null,
@@ -39,7 +40,9 @@ class _buildNameSetCardState extends State<buildNameSetCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               Text(
-                'Number of Sets',
+                widget.timerData.timerType == TimerType.round
+                    ? 'Number of Rounds'
+                    : 'Number of Sets',
                 style: kBoldTextStyle,
               ),
               InkWell(
