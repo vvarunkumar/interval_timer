@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:workout_timer/components/text_container_box.dart';
+import 'package:htimer_app/components/text_container_box.dart';
 
 class BottomButton extends StatelessWidget {
   final Function onTap;
@@ -19,6 +19,7 @@ class BottomButton extends StatelessWidget {
           child: Center(
             child: TextContainerBox(
               text: 'SAVE',
+              textColor: Colors.white,
               height: containerHeight * 0.5,
             ),
           ),

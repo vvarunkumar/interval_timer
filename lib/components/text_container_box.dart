@@ -5,8 +5,18 @@ class TextContainerBox extends StatelessWidget {
   final EdgeInsetsGeometry padding, margin;
   final double height;
   final double width;
-  const TextContainerBox({Key key, this.text, this.padding, this.margin, this.height, this.width})
-      : super(key: key);
+  final Color textColor;
+  final Alignment textAlign;
+  const TextContainerBox({
+    Key key,
+    this.text,
+    this.padding,
+    this.margin,
+    this.height,
+    this.width,
+    this.textColor,
+    this.textAlign,
+  }) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -16,9 +26,13 @@ class TextContainerBox extends StatelessWidget {
       width: width,
       child: FittedBox(
         fit: BoxFit.contain,
+        alignment: textAlign ?? Alignment.center,
         child: Text(
           text,
           textAlign: TextAlign.center,
+          style: TextStyle(
+            color: textColor,
+          ),
         ),
       ),
     );

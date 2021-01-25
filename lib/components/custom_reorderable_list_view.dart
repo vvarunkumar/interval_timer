@@ -199,10 +199,10 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
   //
   // This value is used when the extents haven't yet been calculated from
   // the currently dragging widget, such as when it first builds.
-  static const double _defaultDropAreaExtent = 40.0;
+  static const double _defaultDropAreaExtent = 10.0;
 
   // The additional margin to place around a computed drop area.
-  static const double _dropAreaMargin = 8.0;
+  static const double _dropAreaMargin = 4.0;
 
   // How long an animation to reorder an element in the list takes.
   static const Duration _reorderAnimationDuration = Duration(milliseconds: 200);
@@ -582,14 +582,21 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
         reverse: widget.reverse,
         child: _buildContainerForScrollDirection(
           children: <Widget>[
-            if (widget.reverse) _wrap(finalDropArea, widget.children.length, constraints),
+            _wrap(finalDropArea, widget.children.length, constraints),
             if (widget.header != null) widget.header,
             for (int i = 0; i < widget.children.length; i += 1)
               _wrap(widget.children[i], i, constraints),
-            if (!widget.reverse) _wrap(finalDropArea, widget.children.length, constraints),
+            _wrap(finalDropArea, widget.children.length, constraints),
           ],
         ),
       );
     });
   }
 }
+
+
+
+
+
+
+

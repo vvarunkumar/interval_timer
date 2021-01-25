@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:workout_timer/components/text_container_box.dart';
-import 'package:workout_timer/model/default_timer_data.dart';
-import 'package:workout_timer/model/timer_data.dart';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:workout_timer/constants.dart';
-import 'package:workout_timer/services/firebase_share.dart';
+import 'package:htimer_app/components/text_container_box.dart';
+import 'package:htimer_app/model/timer_data.dart';
+import 'package:htimer_app/constants.dart';
+import 'package:htimer_app/services/firebase_user.dart';
+import 'package:htimer_app/services/firestore_services.dart';
 
 class TimerCardWidget extends StatelessWidget {
   final TimerData timerData;
@@ -13,6 +11,7 @@ class TimerCardWidget extends StatelessWidget {
   final Function onDelete;
   final Function onEdit;
   final Function onTap;
+  final Function onShare;
   final bool isExpanded;
 
   const TimerCardWidget({
@@ -22,13 +21,33 @@ class TimerCardWidget extends StatelessWidget {
     this.onDelete,
     this.onTap,
     this.onEdit,
+    this.onShare,
     this.isExpanded,
   }) : super(key: key);
+
+  void onBackup(BuildContext context) async {
+    String docID = await FirestoreServices().backupTimer(timerData: timerData);
+    bool isSuccessful = docID != null;
+    final snackBar = SnackBar(
+      content: Text(isSuccessful ? 'Backup created successfully' : 'Backup failed'),
+      duration: Duration(seconds: 2),
+      action: SnackBarAction(
+        label: isSuccessful ? 'Undo' : 'Sign In',
+        onPressed: () {
+          if (isSuccessful) {
+            FirestoreServices().deleteBackupTimer(docID: docID);
+          }
+        },
+      ),
+    );
+    Scaffold.of(context).showSnackBar(snackBar);
+  }
 
   @override
   Widget build(BuildContext context) {
     final deviceWidth = MediaQuery.of(context).size.width;
-    final deviceHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
+    bool isPortrait = MediaQuery.of(context).orientation == Orientation.portrait;
+
     return Dismissible(
       confirmDismiss: onDelete,
       key: key,
@@ -41,7 +60,8 @@ class TimerCardWidget extends StatelessWidget {
         child: Container(
 //          height: 75.0,
           width: deviceWidth,
-          margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: deviceWidth * 0.05),
+          margin: EdgeInsets.symmetric(
+              vertical: 10.0, horizontal: isPortrait ? (deviceWidth * 0.05) : (deviceWidth * 0.15)),
           padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
           decoration: BoxDecoration(
             border: Border.all(
@@ -61,7 +81,7 @@ class TimerCardWidget extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(8.0),
                             decoration: BoxDecoration(
-                              color: Color(0xFF1D1D1D),
+                              color: Color(0xFFC4C4C4),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -69,25 +89,52 @@ class TimerCardWidget extends StatelessWidget {
                               size: 25.0,
                             ),
                           ),
-                          TextContainerBox(
-                            height: 30.0,
-                            width: deviceWidth * 0.55,
-                            text: timerData.timerName,
-                            textAlign: Alignment.centerLeft,
+                          SizedBox(
+                            width: 10.0,
                           ),
-                          InkWell(
+                          Expanded(
+                            child: TextContainerBox(
+                              height: 30.0,
+                              text: timerData.timerName,
+                              textAlign: Alignment.centerLeft,
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            elevation: 15,
+                            itemBuilder: (context) {
+                              return [
+                                'Edit',
+                                'Backup',
+                                'Share',
+                              ].map((item) {
+                                return PopupMenuItem(
+                                  value: item,
+                                  child: Text(item),
+                                );
+                              }).toList();
+                            },
                             child: Container(
                               padding: const EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
-                                color: Color(0xFF1D1D1D),
+//                                color: Color(0xFF1D1D1D),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                Icons.edit,
+                                Icons.more_vert,
                                 size: 25.0,
                               ),
                             ),
-                            onTap: onEdit,
+                            onSelected: (value) {
+                              if (value == 'Edit') {
+                                print("Edit Button Clicked");
+                                onEdit();
+                              } else if (value == 'Backup') {
+                                if (FirebaseCurrentUser.user != null) onBackup(context);
+                              } else if (value == 'Share') {
+                                print("Share Button Clicked");
+                                onShare();
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -95,34 +142,41 @@ class TimerCardWidget extends StatelessWidget {
                         width: double.infinity,
                         height: 38.0 * timerData.exerciseDetailList.length,
                         margin: EdgeInsets.symmetric(vertical: 5.0),
-                        child: ListView.builder(
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  AutoSizeText(
-                                    '${timerData.exerciseDetailList[index].name}',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      color: Colors.grey,
+                        child: Column(
+                          children: <Widget>[
+                            for (int index = 0;
+                                index < timerData.exerciseDetailList.length;
+                                index++)
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: Text(
+                                        '${timerData.exerciseDetailList[index].name}',
+                                        style: TextStyle(
+                                          fontSize: 18.0,
+                                          color: Colors.grey,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  AutoSizeText(
-                                    '${formatTime(timerData.exerciseDetailList[index].duration)}',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      color: Colors.grey,
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 5.0),
+                                      child: Text(
+                                        '${formatTime(timerData.exerciseDetailList[index].duration)}',
+                                        style: TextStyle(
+                                          fontSize: 18.0,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            );
-                          },
-                          itemCount: timerData.exerciseDetailList.length,
+                          ],
                         ),
                       ),
                       Center(
@@ -137,46 +191,10 @@ class TimerCardWidget extends StatelessWidget {
                           child: IconButton(
                             icon: Icon(Icons.play_arrow),
                             iconSize: 35.0,
+                            color: Colors.white,
                             onPressed: onPlay,
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.share),
-                        onPressed: () async {
-                          FirebaseShare _share = FirebaseShare();
-                          String docID = await _share.saveTimerFirebase(timerData);
-                          print("Received Doc ID $docID");
-                          showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: Text('Share'),
-                                  content: Container(
-                                    height: 100.0,
-                                    child: Column(
-                                      children: <Widget>[
-                                        Text('$docID'),
-                                        IconButton(
-                                          icon: Icon(Icons.content_copy),
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(text: docID));
-                                          },
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  actions: <Widget>[
-                                    FlatButton(
-                                      child: Text("Close"),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    )
-                                  ],
-                                );
-                              });
-                        },
                       ),
                     ],
                   ),
@@ -187,7 +205,7 @@ class TimerCardWidget extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        color: Color(0xFF1D1D1D),
+                        color: Color(0xFFC4C4C4),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -195,22 +213,16 @@ class TimerCardWidget extends StatelessWidget {
                         size: 25.0,
                       ),
                     ),
-                    TextContainerBox(
-                      height: 30.0,
-//                      margin: EdgeInsets.only(left: 10.0),
-                      width: deviceWidth * 0.72,
-                      text: timerData.timerName,
-                      textAlign: Alignment.centerLeft,
+                    SizedBox(
+                      width: 10.0,
                     ),
-//                    InkWell(
-//                      child: Padding(
-//                        padding: const EdgeInsets.all(8.0),
-//                        child: Icon(
-//                          Icons.edit,
-//                        ),
-//                      ),
-//                      onTap: onEdit,
-//                    ),
+                    Expanded(
+                      child: TextContainerBox(
+                        height: 30.0,
+                        text: timerData.timerName,
+                        textAlign: Alignment.centerLeft,
+                      ),
+                    ),
                   ],
                 ),
         ),

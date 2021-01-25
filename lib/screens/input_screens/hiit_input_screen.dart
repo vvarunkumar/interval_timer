@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:workout_timer/components/color_picker_dialog.dart';
-import 'package:workout_timer/constants.dart';
-import 'package:workout_timer/custom_widgets/bottom_button.dart';
-import 'package:workout_timer/custom_widgets/extras_card.dart';
-import 'package:workout_timer/custom_widgets/name_set_card.dart';
-import 'package:workout_timer/components/reusable_card.dart';
-import 'package:workout_timer/components/exercise_data.dart';
-import 'package:workout_timer/components/row_text_duration.dart';
-import 'package:workout_timer/components/duration_picker.dart';
-import 'package:workout_timer/screens/timer_screen.dart';
-import 'package:workout_timer/screens/home_screen/timer_data_card.dart';
-import 'package:workout_timer/model/timer_data.dart';
-import 'package:workout_timer/services/timer_shared_prefs.dart';
-import 'package:workout_timer/services/analytics_service.dart';
+import 'package:htimer_app/components/color_picker_dialog.dart';
+import 'package:htimer_app/constants.dart';
+import 'package:htimer_app/widgets/bottom_button.dart';
+import 'package:htimer_app/widgets/extras_card.dart';
+import 'package:htimer_app/widgets/name_set_card.dart';
+import 'package:htimer_app/components/reusable_card.dart';
+import 'package:htimer_app/data/exercise_data.dart';
+import 'package:htimer_app/components/row_text_duration.dart';
+import 'package:htimer_app/components/duration_picker.dart';
+import 'package:htimer_app/data/timer_card.dart';
+import 'package:htimer_app/model/timer_data.dart';
+import 'package:htimer_app/services/analytics_service.dart';
 
 class HIITInputScreen extends StatefulWidget {
   final TimerCards timerCards;
@@ -95,6 +93,10 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: kPrimaryThemeColor,
+        title: Text('HIIT Timer'),
+      ),
       body: SafeArea(
         child: GestureDetector(
           onTap: () {
@@ -224,21 +226,24 @@ class _HIITInputScreenState extends State<HIITInputScreen> {
                     _name.text.isEmpty ? _validateName = true : _validateName = false;
                   });
                   if (_validateName == true) return;
-                  _hiitData.timerName = _name.text;
+                  _hiitData.timerName = _name.text.trim();
 
                   if (widget.timerData == null) {
-                    widget.timerCards.timerCardList
-                        .add(TimerCardData(timerCardName: _name.text, timerData: _hiitData));
+                    widget.timerCards
+                        .addData(TimerCardData(timerCardName: _name.text, timerData: _hiitData));
+
                     await AnalyticsService()
                         .logTimerData(name: 'New_HIIT_Timer_Created', timerData: _hiitData);
                   } else {
-                    widget.timerCards.timerCardList[widget.index] =
-                        TimerCardData(timerCardName: _name.text, timerData: _hiitData);
+                    widget.timerCards.replaceData(
+                        timerCardData:
+                            TimerCardData(timerCardName: _name.text, timerData: _hiitData),
+                        index: widget.index);
 
                     await AnalyticsService()
                         .logTimerData(name: 'Old_HIIT_Timer_Edited', timerData: _hiitData);
                   }
-                  saveHomeData(timerCards: widget.timerCards);
+//                  saveHomeData(timerCards: widget.timerCards);
 
                   Navigator.pop(context);
                 },

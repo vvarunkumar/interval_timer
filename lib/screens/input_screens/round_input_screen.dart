@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:workout_timer/components/color_picker_dialog.dart';
-import 'package:workout_timer/constants.dart';
-import 'package:workout_timer/widgets/bottom_button.dart';
-import 'package:workout_timer/widgets/extras_card.dart';
-import 'package:workout_timer/widgets/name_set_card.dart';
-import 'package:workout_timer/components/reusable_card.dart';
-import 'package:workout_timer/data/exercise_data.dart';
-import 'package:workout_timer/components/row_text_duration.dart';
-import 'package:workout_timer/components/duration_picker.dart';
-import 'package:workout_timer/data/timer_card.dart';
-import 'package:workout_timer/model/timer_data.dart';
-import 'package:workout_timer/services/shared_prefs.dart';
-import 'package:workout_timer/services/analytics_service.dart';
+import 'package:htimer_app/components/color_picker_dialog.dart';
+import 'package:htimer_app/constants.dart';
+import 'package:htimer_app/widgets/bottom_button.dart';
+import 'package:htimer_app/widgets/extras_card.dart';
+import 'package:htimer_app/widgets/name_set_card.dart';
+import 'package:htimer_app/components/reusable_card.dart';
+import 'package:htimer_app/data/exercise_data.dart';
+import 'package:htimer_app/components/row_text_duration.dart';
+import 'package:htimer_app/components/duration_picker.dart';
+import 'package:htimer_app/data/timer_card.dart';
+import 'package:htimer_app/model/timer_data.dart';
+import 'package:htimer_app/services/analytics_service.dart';
 
 class RoundInputScreen extends StatefulWidget {
   final TimerCards timerCards;
@@ -92,6 +91,10 @@ class _RoundInputScreenState extends State<RoundInputScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: kPrimaryThemeColor,
+        title: Text('Round Timer'),
+      ),
       body: SafeArea(
         child: GestureDetector(
           onTap: () {
@@ -213,21 +216,24 @@ class _RoundInputScreenState extends State<RoundInputScreen> {
                     _name.text.isEmpty ? _validateName = true : _validateName = false;
                   });
                   if (_validateName == true) return;
-                  _roundTimerData.timerName = _name.text;
+                  _roundTimerData.timerName = _name.text.trim();
 
                   if (widget.timerData == null) {
-                    widget.timerCards.timerCardList
-                        .add(TimerCardData(timerCardName: _name.text, timerData: _roundTimerData));
+                    widget.timerCards.addData(
+                        TimerCardData(timerCardName: _name.text, timerData: _roundTimerData));
+
                     await AnalyticsService()
                         .logTimerData(name: 'New_Round_Timer_Created', timerData: _roundTimerData);
                   } else {
-                    widget.timerCards.timerCardList[widget.index] =
-                        TimerCardData(timerCardName: _name.text, timerData: _roundTimerData);
+                    widget.timerCards.replaceData(
+                        timerCardData:
+                            TimerCardData(timerCardName: _name.text, timerData: _roundTimerData),
+                        index: widget.index);
 
                     await AnalyticsService()
                         .logTimerData(name: 'Old_Round_Timer_Edited', timerData: _roundTimerData);
                   }
-                  saveHomeData(timerCards: widget.timerCards);
+//                  saveHomeData(timerCards: widget.timerCards);
 
                   Navigator.pop(context);
                 },

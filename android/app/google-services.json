@@ -1,0 +1,122 @@
+{
+  "project_info": {
+    "project_number": "946219336894",
+    "firebase_url": "https://h-timer.firebaseio.com",
+    "project_id": "h-timer",
+    "storage_bucket": "h-timer.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946219336894:android:e2afc60f0098245e958aef",
+        "android_client_info": {
+          "package_name": "com.htimer.admin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARaD3z1P-cCIKs45WfjO30utMStxuTLV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946219336894:android:5ad19ea1d9e2307d958aef",
+        "android_client_info": {
+          "package_name": "com.htimer.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946219336894-v3vooa6j0129k42sdj7huv4gotj6nbg4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.htimer.app",
+            "certificate_hash": "b0bab9004e5df99d09a6abe2360201d686417c8d"
+          }
+        },
+        {
+          "client_id": "946219336894-97jleovjvu8b4bb2f66ascto5dpo2l60.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.htimer.app",
+            "certificate_hash": "e8f97ee7a40a56b80cc1af1dfc3290b7b19b1a10"
+          }
+        },
+        {
+          "client_id": "946219336894-qa9478dn5k3kbv1k4jpte73nlmlaovje.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.htimer.app",
+            "certificate_hash": "b7f99b7ca5811718abebeda04710073665711be4"
+          }
+        },
+        {
+          "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARaD3z1P-cCIKs45WfjO30utMStxuTLV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:946219336894:android:35e4aea2a386bba5958aef",
+        "android_client_info": {
+          "package_name": "com.regalcoder.workout_timer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARaD3z1P-cCIKs45WfjO30utMStxuTLV0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "946219336894-84qc0v093jojabcsgqpmhe7firculj1k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:workout_timer/constants.dart';
-import 'package:workout_timer/model/timer_data.dart';
+import 'package:htimer_app/constants.dart';
+import 'package:htimer_app/model/timer_data.dart';
 
 class AlertDropdown extends StatefulWidget {
   final TimerData timerData;
@@ -14,7 +14,6 @@ class AlertDropdown extends StatefulWidget {
 class _AlertDropdownState extends State<AlertDropdown> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     widget.timerData.alertName = alertList[2];
   }

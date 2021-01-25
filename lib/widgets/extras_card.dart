@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:workout_timer/constants.dart';
-import 'package:workout_timer/components/reusable_card.dart';
-import 'package:workout_timer/model/timer_data.dart';
-import 'file:///D:/Code/AndroidStudioProjects/Github/workout_timer/lib/components/alert_dropdown.dart';
+import 'package:htimer_app/constants.dart';
+import 'package:htimer_app/components/reusable_card.dart';
+import 'package:htimer_app/model/timer_data.dart';
+import 'package:htimer_app/components/alert_dropdown.dart';
 
 class BuildExtrasCard extends StatelessWidget {
   final TimerData timerData;

@@ -18,13 +18,15 @@ class TextEditingDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _controller.text = initialVal;
+//    _controller.text = initialVal;
     return new AlertDialog(
       title: Text('Enter Text: '),
       content: Container(
         width: 65,
         child: TextField(
           controller: _controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
         ),
       ),
       actions: [
@@ -33,7 +35,9 @@ class TextEditingDialog extends StatelessWidget {
           child: cancelWidget,
         ),
         new FlatButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text),
+          onPressed: () {
+            Navigator.of(context).pop(_controller.text.length == 0 ? initialVal : _controller.text);
+          },
           child: confirmWidget,
         ),
       ],

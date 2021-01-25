@@ -1,5 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
+import 'dart:math';
+
+Widget buildColorWidget({Function onColorTap, Color color}) {
+  return InkWell(
+    onTap: onColorTap,
+    child: Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Container(
+        height: 25.0,
+        width: 25.0,
+        decoration: BoxDecoration(
+          color: color ?? Colors.indigoAccent,
+          shape: BoxShape.circle,
+        ),
+      ),
+    ),
+  );
+}
+
+Color randomColorSelector() {
+  int _colorIndex = Random().nextInt(colorList.length);
+  return colorList[_colorIndex];
+}
 
 class ColorPickerDialog extends StatelessWidget {
   final EdgeInsets titlePadding;
@@ -28,39 +51,7 @@ class ColorPickerDialog extends StatelessWidget {
           selectedColor: selectedColor,
           allowShades: false,
           circleSize: 60.0,
-          colors: [
-            Colors.red,
-            Colors.redAccent,
-            Colors.pink,
-            Colors.pinkAccent,
-            Colors.purple,
-            Colors.purpleAccent,
-            Colors.deepPurple,
-            Colors.deepPurpleAccent,
-            Colors.indigo,
-            Colors.indigoAccent,
-            Colors.blue,
-            Colors.blueAccent,
-            Colors.cyan,
-            Colors.cyanAccent,
-            Colors.teal,
-            Colors.tealAccent,
-            Colors.green,
-            Colors.greenAccent,
-            Colors.lightGreen,
-            Colors.lightGreenAccent,
-            Colors.yellow,
-            Colors.yellowAccent,
-            Colors.amber,
-            Colors.amberAccent,
-            Colors.orange,
-            Colors.orangeAccent,
-            Colors.deepOrange,
-            Colors.deepOrangeAccent,
-            Colors.brown,
-            Colors.grey,
-            Colors.blueGrey,
-          ],
+          colors: colorList,
           onMainColorChange: (value) {
             pickedColor = value;
           },
@@ -81,3 +72,37 @@ class ColorPickerDialog extends StatelessWidget {
     );
   }
 }
+
+final List<ColorSwatch<dynamic>> colorList = [
+  Colors.red,
+  Colors.redAccent,
+  Colors.pink,
+  Colors.pinkAccent,
+  Colors.purple,
+  Colors.purpleAccent,
+  Colors.deepPurple,
+  Colors.deepPurpleAccent,
+  Colors.indigo,
+  Colors.indigoAccent,
+  Colors.blue,
+  Colors.blueAccent,
+  Colors.cyan,
+  Colors.cyanAccent,
+  Colors.teal,
+  Colors.tealAccent,
+  Colors.green,
+  Colors.greenAccent,
+  Colors.lightGreen,
+  Colors.lightGreenAccent,
+  Colors.yellow,
+  Colors.yellowAccent,
+  Colors.amber,
+  Colors.amberAccent,
+  Colors.orange,
+  Colors.orangeAccent,
+  Colors.deepOrange,
+  Colors.deepOrangeAccent,
+  Colors.brown,
+  Colors.grey,
+  Colors.blueGrey,
+];

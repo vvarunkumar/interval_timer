@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:workout_timer/data/timer_card.dart';
-import 'package:workout_timer/constants.dart';
+import 'package:htimer_app/data/timer_card.dart';
+import 'package:htimer_app/constants.dart';
 
 SharedPreferences prefs;
 
